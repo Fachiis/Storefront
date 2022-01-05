@@ -1,18 +1,36 @@
 """ 
-This module provides the function to create Store Data Model which comprises of a Product, Customer, Address, Collection and Order object. 
+This module provides the function to create a Product, Customer, Address, Collection... Data Model. 
 """
 from django.db import models
 
 
 class Promotion(models.Model):
-    # To do: add start and end date & time of promotion
+    """
+    A Promotion class for creating a Promotion obj.
+
+    Fields:
+        description (str): The field describe what the promotion is all about.
+        discount (float): The field for the discount amount offered.
+    """
+
     description = models.CharField(max_length=255)
     discount = models.FloatField()
+    #! To do: add start and end date & time of promotion
 
 
 class Collection(models.Model):
+    """
+    A Collection class for creating a Collection obj.
+
+    Fields:
+        title (str): The field for the title of the collection.
+        featured_product (int): The field for connecting many collection to a product (use to advertize a collection).
+    """
+
     title = models.CharField(max_length=255)
-    featured_product = models.ForeignKey(to="Product", on_delete=models.SET_NULL, null=True, related_name='+')
+    featured_product = models.ForeignKey(
+        to="Product", on_delete=models.SET_NULL, null=True, related_name="+"
+    )
 
 
 class Product(models.Model):
@@ -20,11 +38,13 @@ class Product(models.Model):
     A Product class for creating a Product obj.
 
     Fields:
-    title (str): The field column for adding the title of a product.
-    description (str): The field column for adding the description of a product.
-    price (int): The field column for adding the price of a product.
-    inventory (int): The field column for adding the number of the product available.
-    last_update (int): The field column for adding the date and time at which a product is updated.
+        title (str): The field for adding the title of a product.
+        description (str): The field for adding the description of a product.
+        price (int): The field for adding the price of a product.
+        inventory (int): The field for adding the number of the product available.
+        last_update (int): The field for adding the date and time at which a product is updated.
+        collection (int): The field for connecting many products to a collection.
+        promotions (int): The field for connecting many products to many collections.
     """
 
     title = models.CharField(max_length=255)
@@ -37,10 +57,26 @@ class Product(models.Model):
 
 
 class Cart(models.Model):
+    """
+    A Cart class for creating a Cart obj.
+
+    Field:
+        created_at = The field for noting the day and time a cart obj is created.
+    """
+
     created_at = models.DateTimeField(auto_now_add=True)
 
 
 class CartItem(models.Model):
+    """
+    A CartItem class for creating a CartItem obj.
+
+    Fields:
+        cart (int): The field for connecting many cartitems to a cart.
+        product (int): The field for connecting many cartitems to a product.
+        quantity (int): The field for noting the number of items in a cart
+    """
+
     cart = models.ForeignKey(to=Cart, on_delete=models.CASCADE)
     product = models.ForeignKey(to=Product, on_delete=models.CASCADE)
     quantity = models.PositiveSmallIntegerField()
@@ -51,12 +87,12 @@ class Customer(models.Model):
     A Customer class for creating a Customer obj.
 
     Fields:
-    first_name (str): The field column for adding the first name of a customer.
-    last_name (str): The field column for adding the last name of a customer.
-    email (str): The field column for adding the email address of a customer (no duplicates).
-    phone (str): The field column for adding the phone number of a customer.
-    birthday (int): The field column for adding the birth day of a customer (optional).
-    membership (str): The field column for adding the rank of a customer.
+        first_name (str): The field for adding the first name of a customer.
+        last_name (str): The field for adding the last name of a customer.
+        email (str): The field for adding the email address of a customer (no duplicates).
+        phone (str): The field for adding the phone number of a customer.
+        birthday (int): The field for adding the birth day of a customer (optional).
+        membership (str): The field for adding the rank of a customer.
     """
 
     MEMBERSHIP_BRONZE = "B"
@@ -82,9 +118,8 @@ class Order(models.Model):
     A Order class for creating an order obj.
 
     Fields:
-    placed_at (int): The field column for adding the date and time at which an order is placed.
-    payment_status (int): The field column for adding the status of the payment
-
+        placed_at (int): The field for adding the date and time at which an order is placed.
+        payment_status (int): The field for adding the status of the payment
     """
 
     PAYMENT_STATUS_PENDING = "P"
@@ -103,12 +138,31 @@ class Order(models.Model):
 
 
 class Address(models.Model):
+    """
+    An Address class for creating an address obj.
+
+    Fields:
+        street (str): The field for adding the street address.
+        city (str): The field for adding the city address.
+        customer (int): The field for connecting many addresses to a customer.
+    """
+
     street = models.CharField(max_length=255)
     city = models.CharField(max_length=255)
     customer = models.ForeignKey(to=Customer, on_delete=models.CASCADE)
 
 
 class OrderItem(models.Model):
+    """
+    An OrderItem class for creating an orderitem obj.
+
+    Fields:
+        order (int): The field for connecting many orderitems to an order.
+        product (int): The field for connecting many orderitems to a product.
+        quantity (int): The field for noting the quantity of orderitem.
+        unit_price (float): The field for taking note of the price at which an orderitem instance occurred.
+    """
+
     order = models.ForeignKey(to=Order, on_delete=models.PROTECT)
     product = models.ForeignKey(to=Product, on_delete=models.PROTECT)
     quantity = models.PositiveSmallIntegerField()

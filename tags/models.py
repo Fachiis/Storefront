@@ -1,14 +1,29 @@
+""" 
+This module provides the function to create a Tag and TaggedItem Data Model. 
+"""
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
 
 
 class Tag(models.Model):
+    """
+    A Tag class for creating a tag obj.
+
+    Fields:
+        label (str): The field for adding the label of a tag.
+    """
     label = models.CharField(max_length=255)
     
 
 class TaggedItem(models.Model):
-    # what tag label on tag item
+    """
+    A TagItem class for creating a tagitem obj.
+
+    Fields:
+        tag (str): The field for connecting many tagitems to a tag.
+        Generic Relation Creation...
+    """
     tag = models.ForeignKey(to=Tag, on_delete=models.CASCADE)
     # what object to tag (e.g product, article, video)
     # TYPE (Product, Article, Video)
