@@ -39,6 +39,7 @@ class Product(models.Model):
 
     Fields:
         title (str): The field for adding the title of a product.
+        slug (str): The field for adding the slug (Search Engine Optimal)
         description (str): The field for adding the description of a product.
         price (int): The field for adding the price of a product.
         inventory (int): The field for adding the number of the product available.
@@ -48,8 +49,9 @@ class Product(models.Model):
     """
 
     title = models.CharField(max_length=255)
+    slug = models.SlugField()
     description = models.TextField()
-    price = models.DecimalField(max_digits=6, decimal_places=2)
+    unit_price = models.DecimalField(max_digits=6, decimal_places=2)
     inventory = models.IntegerField()
     last_update = models.DateTimeField(auto_now=True)
     collection = models.ForeignKey(to=Collection, on_delete=models.PROTECT)
