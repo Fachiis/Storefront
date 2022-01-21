@@ -31,6 +31,12 @@ class Collection(models.Model):
     featured_product = models.ForeignKey(
         to="Product", on_delete=models.SET_NULL, null=True, related_name="+"
     )
+    
+    def __str__(self):
+        return self.title
+    
+    class Meta:
+        ordering = ['title']
 
 
 class Product(models.Model):
@@ -56,6 +62,12 @@ class Product(models.Model):
     last_update = models.DateTimeField(auto_now=True)
     collection = models.ForeignKey(to=Collection, on_delete=models.PROTECT)
     promotions = models.ManyToManyField(to=Promotion)
+    
+    def __str__(self):
+        return self.title
+    
+    class Meta:
+        ordering = ['title']
 
 
 class Cart(models.Model):
@@ -118,6 +130,7 @@ class Customer(models.Model):
         indexes = [
             models.Index(fields=['first_name', 'last_name'])
         ]
+        ordering = ['first_name']
 
 
 class Order(models.Model):
