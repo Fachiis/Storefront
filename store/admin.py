@@ -1,61 +1,146 @@
 """
 A module that handles the admin section of the store by registering and customizing the data model.
 """
-from django.contrib import admin
+from typing import Any
+from django.contrib import admin, messages
 from django.db.models import Count
 from django.urls import reverse
 from django.http import HttpRequest
 from django.utils.html import format_html
 from django.utils.http import urlencode
+from django.db.models.query import QuerySet
 
 from . import models
+
+
+class InventoryFilter(admin.SimpleListFilter):
+    """
+    A customize Inventory Filter that returns Low to admin when the inventory is less than 10
+
+    Returns:
+        QuerySet: The result of the queryset
+    """
+    title = 'inventory'
+    parameter_name = 'inventory'
+    condition = '<10'
+
+    def lookups(self, request: Any, model_admin: Any):
+        """
+        The filter lookups in the admin interface
+
+        Args:
+            request (Any): Any
+            model_admin (Any): Any
+
+        Returns:
+            list_of_tuples: ('Code', 'Human_readable')
+        """
+        return [(self.condition, 'Low'), ]
+
+    def queryset(self, request: Any, queryset: QuerySet):
+        if self.value() == self.condition:
+            return queryset.filter(inventory__lt=10)
 
 
 @admin.register(models.Product)
 class ProductAdmin(admin.ModelAdmin):
     """
-    A Product Admin class for the product data model.
+    A Product Admin class for the instance of a product model.
 
     Overridden options:
-        list_display
-        list_editable
-        list_per_page
-        list_select_related
+        actions: add form action to the instances of the product
+        prepopulated_fields: prefill some fields with another fields
+        autocomplete_fields: search and dropdown list for many2one OR many2many
+        list_display: display selected fields to the user
+        list_editable: selected fields that should be editable
+        list_per_page: product instances per page
+        list_select_related: queries reduction by many2one fields
+        list_filter: side bar filter options
 
     Functions:
         collection_title
         inventory_status
     """
+    actions = ['clear_inventory']
+    prepopulated_fields = {
+        'slug': ('title',)
+    }
+    autocomplete_fields = ['collection']
     list_display = ['title', 'unit_price',
                     'inventory_status', 'collection_title']
     list_editable = ['unit_price']
     list_per_page = 10
     list_select_related = ['collection']
+    list_filter = ['collection', 'last_update', InventoryFilter]
 
     def collection_title(self, product):
+        """
+        A customize field option of Product data model that return the collection title
+
+        Args:
+            product ([type]): instance of product
+
+        Returns:
+            collection_title (str): returns the product collection title
+        """
         return product.collection.title
 
     @admin.display(ordering='inventory')
     def inventory_status(self, product):
+        """
+        A method that returns Low  or Ok if the product inventory field is less than 10 or more
+
+        Args:
+            product ([type]): instance of product
+
+        Returns:
+            Low|OK (str): returns Low  or Ok
+        """
         return 'Low' if product.inventory < 10 else 'Ok'
+
+    @admin.action(description='Clear selected product inventory')
+    def clear_inventory(self, request: HttpRequest, queryset: QuerySet):
+        """
+        A custom action method that clears selected product inventory
+
+        Args:
+            request (HttpRequest): instance of request obj
+            queryset (QuerySet): Queryset
+        """
+        updated_count = queryset.update(inventory=0)
+        self.message_user(
+            request=request,
+            message=f'{updated_count} products were updated successfully', level=messages.SUCCESS
+        )
 
 
 @admin.register(models.Customer)
 class CustomerAdmin(admin.ModelAdmin):
     """
-    A Customer Admin class for the customer data model.
+    A Customer Admin class for the instance of customer model.
 
     Overridden options:
-        list_display
-        list_editable
-        list_per_page
+        list_display: display selected fields to the user
+        list_editable: selected fields that should be editable
+        list_per_page: product instances per page
+        search_fields: searchbox for product instances
     """
     list_display = ['first_name', 'last_name', 'membership', 'customer_orders']
     list_editable = ['membership']
     list_per_page = 10
+    search_fields = ['first_name__istartswith', 'last_name__istartswith']
 
     @admin.display(ordering='customer_orders')
     def customer_orders(self, customer):
+        """
+        A method that create a link to customer's orders from the Customer Admin interface
+
+        Args:
+            customer ([type]): instance of customer
+
+        Returns:
+            link: clickable click to customer's orders
+        """
         url = (reverse('admin:store_order_changelist')
                + '?'
                + urlencode({'customer__id': str(customer.id)}))
@@ -68,11 +153,11 @@ class CustomerAdmin(admin.ModelAdmin):
 @admin.register(models.Order)
 class OrderAdmin(admin.ModelAdmin):
     """
-    An Order Admin class for the order data model.
+    An Order Admin class for the instance order model.
 
     Overridden options:
-        list_display
-        list_per_page
+        list_display: display selected fields to the user
+        list_per_page: product instances per page
     """
     list_display = ['id', 'customer', 'payment_status', 'placed_at']
     list_per_page = 10
@@ -84,16 +169,27 @@ class CollectionAdmin(admin.ModelAdmin):
     A Customer Admin class for the customer data model.
 
     Overridden options:
-        list_display
+        list_display: display selected fields to the user
+        search_fields: searchbox for collection instances
 
     Functions:
         products_count
         get_queryset(overridden function)
     """
     list_display = ['title', 'products_count']
+    search_fields = ['title__istartswith']
 
     @admin.display(ordering='products_count')
     def products_count(self, collection):
+        """
+        A method that create a link to products count from the Collection Admin interface
+
+        Args:
+            collection ([type]): instance of collection
+
+        Returns:
+            link: clickable click to products count
+        """
         url = (reverse('admin:store_product_changelist')
                + '?'
                + urlencode({

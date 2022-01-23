@@ -8,6 +8,7 @@ django = "*"
 django-environ = "*"
 django-debug-toolbar = "*"
 mysqlclient = "*"
+pylint-django = "*"
 
 [dev-packages]
 pylint = "*"

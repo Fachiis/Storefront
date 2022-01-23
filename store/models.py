@@ -15,7 +15,7 @@ class Promotion(models.Model):
 
     description = models.CharField(max_length=255)
     discount = models.FloatField()
-    #! To do: add start and end date & time of promotion
+    # TODO: add start and end date & time of promotion
 
 
 class Collection(models.Model):
