@@ -2,6 +2,7 @@
 This module provides the function to create a Product, Customer, Address, Collection... Data Model. 
 """
 from django.db import models
+from django.core.validators import MinValueValidator
 
 
 class Promotion(models.Model):
@@ -24,13 +25,13 @@ class Collection(models.Model):
 
     Fields:
         title (str): The field for the title of the collection.
-        featured_product (int): The field for connecting many collection to a product (use to advertize a collection).
+        featured_product (int): The field for connecting many collection to a product.
     """
 
-    title = models.CharField(max_length=255)
     featured_product = models.ForeignKey(
         to="Product", on_delete=models.SET_NULL, null=True, related_name="+"
     )
+    title = models.CharField(max_length=255)
 
     def __str__(self):
         return self.title
@@ -46,7 +47,7 @@ class Product(models.Model):
     Fields:
         title (str): The field for adding the title of a product.
         slug (str): The field for adding the slug (Search Engine Optimal)
-        description (str): The field for adding the description of a product.
+        description (str): The field for adding the description of a product (optional).
         price (int): The field for adding the price of a product.
         inventory (int): The field for adding the number of the product available.
         last_update (int): The field for adding the date and time at which a product is updated.
@@ -54,14 +55,17 @@ class Product(models.Model):
         promotions (int): The field for connecting many products to many collections.
     """
 
-    title = models.CharField(max_length=255)
-    slug = models.SlugField()
-    description = models.TextField()
-    unit_price = models.DecimalField(max_digits=6, decimal_places=2)
-    inventory = models.IntegerField()
-    last_update = models.DateTimeField(auto_now=True)
     collection = models.ForeignKey(to=Collection, on_delete=models.PROTECT)
-    promotions = models.ManyToManyField(to=Promotion)
+    description = models.TextField(null=True, blank=True)
+    inventory = models.IntegerField(validators=[MinValueValidator(1)])
+    last_update = models.DateTimeField(auto_now=True)
+    promotions = models.ManyToManyField(to=Promotion, blank=True)
+    slug = models.SlugField()
+    title = models.CharField(max_length=255)
+    unit_price = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        validators=[MinValueValidator(1)])
 
     def __str__(self):
         return self.title
@@ -117,14 +121,14 @@ class Customer(models.Model):
         (MEMBERSHIP_SILVER, "Silver"),
         (MEMBERSHIP_GOLD, "Gold"),
     ]
+    birth_date = models.DateField(null=True)
+    email = models.EmailField(max_length=254, unique=True)
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
-    email = models.EmailField(max_length=254, unique=True)
-    phone = models.CharField(max_length=255)
-    birth_date = models.DateField(null=True)
     membership = models.CharField(
         max_length=1, choices=MEMBERSHIP_CHOICES, default=MEMBERSHIP_BRONZE
     )
+    phone = models.CharField(max_length=255)
 
     def __str__(self) -> str:
         return f'{self.first_name} {self.last_name}'
@@ -153,11 +157,11 @@ class Order(models.Model):
         (PAYMENT_STATUS_COMPLETE, "Complete"),
         (PAYMENT_STATUS_FAILED, "Failed"),
     ]
+    customer = models.ForeignKey(to=Customer, on_delete=models.PROTECT)
     placed_at = models.DateTimeField(auto_now_add=True)
     payment_status = models.CharField(
         max_length=1, choices=PAYMENT_STATUS_CHOICES, default=PAYMENT_STATUS_PENDING
     )
-    customer = models.ForeignKey(to=Customer, on_delete=models.PROTECT)
 
 
 class Address(models.Model):
@@ -170,10 +174,10 @@ class Address(models.Model):
         customer (int): The field for connecting many addresses to a customer.
     """
 
-    street = models.CharField(max_length=255)
     city = models.CharField(max_length=255)
-    zip = models.PositiveSmallIntegerField()
     customer = models.ForeignKey(to=Customer, on_delete=models.CASCADE)
+    street = models.CharField(max_length=255)
+    zip = models.PositiveSmallIntegerField()
 
 
 class OrderItem(models.Model):

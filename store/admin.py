@@ -20,9 +20,9 @@ class InventoryFilter(admin.SimpleListFilter):
     Returns:
         QuerySet: The result of the queryset
     """
-    title = 'inventory'
-    parameter_name = 'inventory'
     condition = '<10'
+    parameter_name = 'inventory'
+    title = 'inventory'
 
     def lookups(self, request: Any, model_admin: Any):
         """
@@ -51,6 +51,7 @@ class ProductAdmin(admin.ModelAdmin):
         actions: add form action to the instances of the product
         prepopulated_fields: prefill some fields with another fields
         autocomplete_fields: search and dropdown list for many2one OR many2many
+        search_fields: searchbox for product instances by
         list_display: display selected fields to the user
         list_editable: selected fields that should be editable
         list_per_page: product instances per page
@@ -62,9 +63,6 @@ class ProductAdmin(admin.ModelAdmin):
         inventory_status
     """
     actions = ['clear_inventory']
-    prepopulated_fields = {
-        'slug': ('title',)
-    }
     autocomplete_fields = ['collection']
     list_display = ['title', 'unit_price',
                     'inventory_status', 'collection_title']
@@ -72,6 +70,10 @@ class ProductAdmin(admin.ModelAdmin):
     list_per_page = 10
     list_select_related = ['collection']
     list_filter = ['collection', 'last_update', InventoryFilter]
+    prepopulated_fields = {
+        'slug': ('title',)
+    }
+    search_fields = ['title']
 
     def collection_title(self, product):
         """
@@ -150,6 +152,20 @@ class CustomerAdmin(admin.ModelAdmin):
         return super().get_queryset(request).annotate(customer_orders=Count('order'))
 
 
+class OrderItemInline(admin.TabularInline):
+    """
+    OrderItem instance(s) to be used inline with the OrderAdmin interface
+
+    Overridden options:
+        autocomplete_fields: search and dropdown list for many2one OR many2many
+        extra: number of pre-open orderitem form
+        model: model to use
+    """
+    autocomplete_fields = ['product']
+    extra = 0
+    model = models.OrderItem
+
+
 @admin.register(models.Order)
 class OrderAdmin(admin.ModelAdmin):
     """
@@ -159,6 +175,8 @@ class OrderAdmin(admin.ModelAdmin):
         list_display: display selected fields to the user
         list_per_page: product instances per page
     """
+    autocomplete_fields = ['customer']
+    inlines = [OrderItemInline]
     list_display = ['id', 'customer', 'payment_status', 'placed_at']
     list_per_page = 10
 
@@ -171,11 +189,13 @@ class CollectionAdmin(admin.ModelAdmin):
     Overridden options:
         list_display: display selected fields to the user
         search_fields: searchbox for collection instances
+        autocomplete_fields: search and dropdown list for many2one OR many2many
 
     Functions:
         products_count
         get_queryset(overridden function)
     """
+    autocomplete_fields = ['featured_product']
     list_display = ['title', 'products_count']
     search_fields = ['title__istartswith']
 

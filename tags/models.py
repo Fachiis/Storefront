@@ -39,12 +39,12 @@ class TaggedItem(models.Model):
         Generic Relation Creation...
     """
 
-    objects = TaggedItemManager()
-    tag = models.ForeignKey(to=Tag, on_delete=models.CASCADE)
     # what object to tag (e.g product, article, video)
     # TYPE (Product, Article, Video)
     # ID (a particular row of interest)
     # content_obj (reading that obj)
-    content_type = models.ForeignKey(to=ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey()
+    content_type = models.ForeignKey(to=ContentType, on_delete=models.CASCADE)
+    objects = TaggedItemManager()
+    object_id = models.PositiveIntegerField()
+    tag = models.ForeignKey(to=Tag, on_delete=models.CASCADE)
