@@ -3,21 +3,25 @@ A module that handles the admin section of the store by registering and customiz
 """
 from django.contrib import admin
 from django.db.models import Count
+from django.urls import reverse
 from django.http import HttpRequest
+from django.utils.html import format_html
+from django.utils.http import urlencode
 
 from . import models
+
 
 @admin.register(models.Product)
 class ProductAdmin(admin.ModelAdmin):
     """
     A Product Admin class for the product data model.
-    
+
     Overridden options:
         list_display
         list_editable
         list_per_page
         list_select_related
-        
+
     Functions:
         collection_title
         inventory_status
@@ -40,22 +44,32 @@ class ProductAdmin(admin.ModelAdmin):
 class CustomerAdmin(admin.ModelAdmin):
     """
     A Customer Admin class for the customer data model.
-    
+
     Overridden options:
         list_display
         list_editable
         list_per_page
     """
-    list_display = ['first_name', 'last_name', 'membership']
+    list_display = ['first_name', 'last_name', 'membership', 'customer_orders']
     list_editable = ['membership']
     list_per_page = 10
+
+    @admin.display(ordering='customer_orders')
+    def customer_orders(self, customer):
+        url = (reverse('admin:store_order_changelist')
+               + '?'
+               + urlencode({'customer__id': str(customer.id)}))
+        return format_html('<a href="{}">{}</a>', url, customer.customer_orders)
+
+    def get_queryset(self, request: HttpRequest):
+        return super().get_queryset(request).annotate(customer_orders=Count('order'))
 
 
 @admin.register(models.Order)
 class OrderAdmin(admin.ModelAdmin):
     """
     An Order Admin class for the order data model.
-    
+
     Overridden options:
         list_display
         list_per_page
@@ -68,10 +82,10 @@ class OrderAdmin(admin.ModelAdmin):
 class CollectionAdmin(admin.ModelAdmin):
     """
     A Customer Admin class for the customer data model.
-    
+
     Overridden options:
         list_display
-        
+
     Functions:
         products_count
         get_queryset(overridden function)
@@ -80,7 +94,12 @@ class CollectionAdmin(admin.ModelAdmin):
 
     @admin.display(ordering='products_count')
     def products_count(self, collection):
-        return collection.products_count
+        url = (reverse('admin:store_product_changelist')
+               + '?'
+               + urlencode({
+                   'collection__id': str(collection.id)
+               }))
+        return format_html('<a href="{}">{}</a>', url, collection.products_count)
 
     def get_queryset(self, request: HttpRequest):
         return super().get_queryset(request).annotate(products_count=Count('product'))
