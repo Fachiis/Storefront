@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "store.apps.StoreConfig",
     "tags.apps.TagsConfig",
     "likes.apps.LikesConfig",
+    "store_custom.apps.StoreCustomConfig",
     # Third-party Apps
     "debug_toolbar",
 ]
