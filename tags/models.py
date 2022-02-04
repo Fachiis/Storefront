@@ -41,13 +41,14 @@ class TaggedItem(models.Model):
         tag (str): The field for connecting many tagitems to a tag.
         Generic Relation Creation...
     """
-
     # what object to tag (e.g product, article, video)
-    # TYPE (Product, Article, Video)
-    # ID (a particular row of interest)
+
     # content_obj (reading that obj)
     content_object = GenericForeignKey()
+    # TYPE (Product, Article, Video)
     content_type = models.ForeignKey(to=ContentType, on_delete=models.CASCADE)
-    objects = TaggedItemManager()
+    # We name it objects_manager so to avoid conflict with the base manager name (objects)
+    objects_manager = TaggedItemManager()
+    # ID (a particular row of interest)
     object_id = models.PositiveIntegerField()
     tag = models.ForeignKey(to=Tag, on_delete=models.CASCADE)
