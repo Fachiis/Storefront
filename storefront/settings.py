@@ -41,14 +41,17 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+
     # Local Apps
     "playground.apps.PlaygroundConfig",
     "store.apps.StoreConfig",
     "tags.apps.TagsConfig",
     "likes.apps.LikesConfig",
     "store_custom.apps.StoreCustomConfig",
+
     # Third-party Apps
     "debug_toolbar",
+    'rest_framework',
 ]
 
 INTERNAL_IPS = [
@@ -141,3 +144,7 @@ USE_TZ = True
 STATIC_URL = "/static/"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+REST_FRAMEWORK = {
+    'COERCE_DECIMAL_TO_STRING': False,
+}

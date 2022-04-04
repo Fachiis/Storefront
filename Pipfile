@@ -9,10 +9,11 @@ django-environ = "*"
 django-debug-toolbar = "*"
 mysqlclient = "*"
 pylint-django = "*"
+djangorestframework = "*"
 
 [dev-packages]
-pylint = "*"
 autopep8 = "*"
+pylint = "*"
 
 [requires]
 python_version = "3.9"

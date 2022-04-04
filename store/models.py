@@ -55,7 +55,7 @@ class Product(models.Model):
         promotions (int): The field for connecting many products to many collections.
     """
 
-    collection = models.ForeignKey(to=Collection, on_delete=models.PROTECT)
+    collection = models.ForeignKey(to=Collection, on_delete=models.PROTECT, related_name="products")
     description = models.TextField(null=True, blank=True)
     inventory = models.IntegerField(validators=[MinValueValidator(1)])
     last_update = models.DateTimeField(auto_now=True)
@@ -191,7 +191,9 @@ class OrderItem(models.Model):
         unit_price (float): The field for taking note of the price at which an orderitem instance occurred.
     """
 
-    order = models.ForeignKey(to=Order, on_delete=models.PROTECT)
-    product = models.ForeignKey(to=Product, on_delete=models.PROTECT)
+    order = models.ForeignKey(
+        to=Order, on_delete=models.PROTECT, related_name="order_items")
+    product = models.ForeignKey(
+        to=Product, on_delete=models.PROTECT, related_name='order_items')
     quantity = models.PositiveSmallIntegerField()
     unit_price = models.DecimalField(max_digits=6, decimal_places=2)
