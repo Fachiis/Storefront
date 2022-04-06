@@ -9,7 +9,7 @@ class CollectionSerializer(serializers.ModelSerializer):
         model = Collection
         fields = ['id', 'title', 'products_count']
 
-    products_count = serializers.IntegerField()
+    products_count = serializers.IntegerField(read_only=True)
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -23,15 +23,3 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def calculate_price_with_tax(self, product: Product):
         return product.unit_price * Decimal(1.1)
-
-    # price = serializers.DecimalField(
-    #     max_digits=6, decimal_places=2, source='unit_price')
-    # collection = serializers.HyperlinkedRelatedField(
-    #     queryset=Collection.objects.all(),
-    #     view_name='collection-detail',
-    # )
-    # collection = CollectionSerializer(read_only=True)
-    # collection = serializers.StringRelatedField()
-    # collection = serializers.PrimaryKeyRelatedField(
-    #     queryset=Collection.objects.all(),
-    # )
