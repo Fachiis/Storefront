@@ -1,6 +1,7 @@
 """ 
 This module provides the function to create a Product, Customer, Address, Collection... Data Model. 
 """
+from datetime import date
 from django.db import models
 from django.core.validators import MinValueValidator
 
@@ -55,7 +56,8 @@ class Product(models.Model):
         promotions (int): The field for connecting many products to many collections.
     """
 
-    collection = models.ForeignKey(to=Collection, on_delete=models.PROTECT, related_name="products")
+    collection = models.ForeignKey(
+        to=Collection, on_delete=models.PROTECT, related_name="products")
     description = models.TextField(null=True, blank=True)
     inventory = models.IntegerField(validators=[MinValueValidator(1)])
     last_update = models.DateTimeField(auto_now=True)
@@ -72,6 +74,14 @@ class Product(models.Model):
 
     class Meta:
         ordering = ['title']
+
+
+class Review(models.Model):
+    product = models.ForeignKey(
+        Product, on_delete=models.CASCADE, related_name="reviews")
+    name = models.CharField(max_length=255)
+    description = models.TextField()
+    date = models.DateTimeField(auto_now_add=True)
 
 
 class Cart(models.Model):

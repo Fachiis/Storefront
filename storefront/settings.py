@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     # Third-party Apps
     "debug_toolbar",
     'rest_framework',
+    'django_filters',
 ]
 
 INTERNAL_IPS = [
