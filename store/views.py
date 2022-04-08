@@ -20,12 +20,11 @@ class ProductViewSet(ModelViewSet):
     search_fields = ['title', 'description']
     ordering_fields = ['unit_price', 'last_update']
 
-    # Use context obj to provide additional data to a serializer (ProductSerializer). Providing the product_with_tax which is in the request obj coming.
     def get_serializer_context(self):
         return {'request': self.request}
 
     def destroy(self, request, *args, **kwargs):
-        # Overide the destroy method by checking if there are order items in a particular product using the extracted product from the kwarg['pk] which the call has already been made in the default destory method by get_object()
+
         if OrderItem.objects.filter(product_id=kwargs['pk']).count() > 0:
             return Response(
                 {'error': 'Product has one or more order items, so it can not be deleted'},
@@ -50,10 +49,8 @@ class CollectionViewSet(ModelViewSet):
 class ReviewViewSet(ModelViewSet):
     serializer_class = ReviewSerializer
 
-    # Overide the get_queryset method the ReviewViewSet class so we can query the review objs under a particular product from the request url parameter(s) extracted from self.kwargs[''] which we do not have access to self in queryset
     def get_queryset(self):
         return Review.objects.filter(product_id=self.kwargs['product_pk']).all()
 
-    # Overide context obj and provide the additional data (product_id) to the serializer class
     def get_serializer_context(self):
         return {"product_id": self.kwargs['product_pk']}
