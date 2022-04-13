@@ -1,7 +1,8 @@
 """ 
 This module provides the function to create a Product, Customer, Address, Collection... Data Model. 
 """
-from datetime import date
+from email.policy import default
+from uuid import uuid4
 from django.db import models
 from django.core.validators import MinValueValidator
 
@@ -91,7 +92,7 @@ class Cart(models.Model):
     Field:
         created_at = The field for noting the day and time a cart obj is created.
     """
-
+    id = models.UUIDField(primary_key=True, default=uuid4)
     created_at = models.DateTimeField(auto_now_add=True)
 
 
@@ -105,9 +106,15 @@ class CartItem(models.Model):
         quantity (int): The field for noting the number of items in a cart
     """
 
-    cart = models.ForeignKey(to=Cart, on_delete=models.CASCADE)
+    cart = models.ForeignKey(
+        to=Cart, on_delete=models.CASCADE, related_name="items")
     product = models.ForeignKey(to=Product, on_delete=models.CASCADE)
-    quantity = models.PositiveSmallIntegerField()
+    quantity = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1)]
+    )
+
+    class Meta:
+        unique_together = [["cart", "product"]]
 
 
 class Customer(models.Model):
