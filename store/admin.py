@@ -20,9 +20,10 @@ class InventoryFilter(admin.SimpleListFilter):
     Returns:
         QuerySet: The result of the queryset
     """
-    condition = '<10'
-    parameter_name = 'inventory'
-    title = 'inventory'
+
+    condition = "<10"
+    parameter_name = "inventory"
+    title = "inventory"
 
     def lookups(self, request: Any, model_admin: Any):
         """
@@ -35,7 +36,9 @@ class InventoryFilter(admin.SimpleListFilter):
         Returns:
             list_of_tuples: ('Code', 'Human_readable')
         """
-        return [(self.condition, 'Low'), ]
+        return [
+            (self.condition, "Low"),
+        ]
 
     def queryset(self, request: Any, queryset: QuerySet):
         if self.value() == self.condition:
@@ -62,18 +65,16 @@ class ProductAdmin(admin.ModelAdmin):
         collection_title
         inventory_status
     """
-    actions = ['clear_inventory']
-    autocomplete_fields = ['collection']
-    list_display = ['title', 'unit_price',
-                    'inventory_status', 'collection_title']
-    list_editable = ['unit_price']
+
+    actions = ["clear_inventory"]
+    autocomplete_fields = ["collection"]
+    list_display = ["title", "unit_price", "inventory_status", "collection_title"]
+    list_editable = ["unit_price"]
     list_per_page = 10
-    list_select_related = ['collection']
-    list_filter = ['collection', 'last_update', InventoryFilter]
-    prepopulated_fields = {
-        'slug': ('title',)
-    }
-    search_fields = ['title']
+    list_select_related = ["collection"]
+    list_filter = ["collection", "last_update", InventoryFilter]
+    prepopulated_fields = {"slug": ("title",)}
+    search_fields = ["title"]
 
     def collection_title(self, product):
         """
@@ -87,7 +88,7 @@ class ProductAdmin(admin.ModelAdmin):
         """
         return product.collection.title
 
-    @admin.display(ordering='inventory')
+    @admin.display(ordering="inventory")
     def inventory_status(self, product):
         """
         A method that returns Low  or Ok if the product inventory field is less than 10 or more
@@ -98,9 +99,9 @@ class ProductAdmin(admin.ModelAdmin):
         Returns:
             Low|OK (str): returns Low  or Ok
         """
-        return 'Low' if product.inventory < 10 else 'Ok'
+        return "Low" if product.inventory < 10 else "Ok"
 
-    @admin.action(description='Clear selected product inventory')
+    @admin.action(description="Clear selected product inventory")
     def clear_inventory(self, request: HttpRequest, queryset: QuerySet):
         """
         A custom action method that clears selected product inventory
@@ -112,7 +113,8 @@ class ProductAdmin(admin.ModelAdmin):
         updated_count = queryset.update(inventory=0)
         self.message_user(
             request=request,
-            message=f'{updated_count} products were updated successfully', level=messages.SUCCESS
+            message=f"{updated_count} products were updated successfully",
+            level=messages.SUCCESS,
         )
 
 
@@ -127,12 +129,16 @@ class CustomerAdmin(admin.ModelAdmin):
         list_per_page: product instances per page
         search_fields: searchbox for product instances
     """
-    list_display = ['first_name', 'last_name', 'membership', 'customer_orders']
-    list_editable = ['membership']
-    list_per_page = 10
-    search_fields = ['first_name__istartswith', 'last_name__istartswith']
 
-    @admin.display(ordering='customer_orders')
+    autocomplete_fields = ["user"]
+    list_display = ["first_name", "last_name", "membership", "customer_orders"]
+    list_editable = ["membership"]
+    list_select_related = ["user"]
+    list_per_page = 10
+    ordering = ["user__first_name", "user__last_name"]
+    search_fields = ["first_name__istartswith", "last_name__istartswith"]
+
+    @admin.display(ordering="customer_orders")
     def customer_orders(self, customer):
         """
         A method that create a link to customer's orders from the Customer Admin interface
@@ -143,13 +149,15 @@ class CustomerAdmin(admin.ModelAdmin):
         Returns:
             link: clickable click to customer's orders
         """
-        url = (reverse('admin:store_order_changelist')
-               + '?'
-               + urlencode({'customer__id': str(customer.id)}))
+        url = (
+            reverse("admin:store_order_changelist")
+            + "?"
+            + urlencode({"customer__id": str(customer.id)})
+        )
         return format_html('<a href="{}">{}</a>', url, customer.customer_orders)
 
     def get_queryset(self, request: HttpRequest):
-        return super().get_queryset(request).annotate(customer_orders=Count('order'))
+        return super().get_queryset(request).annotate(customer_orders=Count("order"))
 
 
 class OrderItemInline(admin.TabularInline):
@@ -161,7 +169,8 @@ class OrderItemInline(admin.TabularInline):
         extra: number of pre-open orderitem form
         model: model to use
     """
-    autocomplete_fields = ['product']
+
+    autocomplete_fields = ["product"]
     extra = 0
     model = models.OrderItem
 
@@ -175,9 +184,10 @@ class OrderAdmin(admin.ModelAdmin):
         list_display: display selected fields to the user
         list_per_page: product instances per page
     """
-    autocomplete_fields = ['customer']
+
+    autocomplete_fields = ["customer"]
     inlines = [OrderItemInline]
-    list_display = ['id', 'customer', 'payment_status', 'placed_at']
+    list_display = ["id", "customer", "payment_status", "placed_at"]
     list_per_page = 10
 
 
@@ -195,11 +205,12 @@ class CollectionAdmin(admin.ModelAdmin):
         products_count
         get_queryset(overridden function)
     """
-    autocomplete_fields = ['featured_product']
-    list_display = ['title', 'products_count']
-    search_fields = ['title__istartswith']
 
-    @admin.display(ordering='products_count')
+    autocomplete_fields = ["featured_product"]
+    list_display = ["title", "products_count"]
+    search_fields = ["title__istartswith"]
+
+    @admin.display(ordering="products_count")
     def products_count(self, collection):
         """
         A method that create a link to products count from the Collection Admin interface
@@ -210,12 +221,12 @@ class CollectionAdmin(admin.ModelAdmin):
         Returns:
             link: clickable click to products count
         """
-        url = (reverse('admin:store_product_changelist')
-               + '?'
-               + urlencode({
-                   'collection__id': str(collection.id)
-               }))
+        url = (
+            reverse("admin:store_product_changelist")
+            + "?"
+            + urlencode({"collection__id": str(collection.id)})
+        )
         return format_html('<a href="{}">{}</a>', url, collection.products_count)
 
     def get_queryset(self, request: HttpRequest):
-        return super().get_queryset(request).annotate(products_count=Count('product'))
+        return super().get_queryset(request).annotate(products_count=Count("product"))

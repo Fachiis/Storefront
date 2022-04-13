@@ -1,9 +1,10 @@
 """ 
 This module provides the function to create a Product, Customer, Address, Collection... Data Model. 
 """
-from email.policy import default
 from uuid import uuid4
 from django.db import models
+from django.conf import settings
+from django.contrib import admin
 from django.core.validators import MinValueValidator
 
 
@@ -39,7 +40,7 @@ class Collection(models.Model):
         return self.title
 
     class Meta:
-        ordering = ['title']
+        ordering = ["title"]
 
 
 class Product(models.Model):
@@ -58,7 +59,8 @@ class Product(models.Model):
     """
 
     collection = models.ForeignKey(
-        to=Collection, on_delete=models.PROTECT, related_name="products")
+        to=Collection, on_delete=models.PROTECT, related_name="products"
+    )
     description = models.TextField(null=True, blank=True)
     inventory = models.IntegerField(validators=[MinValueValidator(1)])
     last_update = models.DateTimeField(auto_now=True)
@@ -66,20 +68,20 @@ class Product(models.Model):
     slug = models.SlugField()
     title = models.CharField(max_length=255)
     unit_price = models.DecimalField(
-        max_digits=6,
-        decimal_places=2,
-        validators=[MinValueValidator(1)])
+        max_digits=6, decimal_places=2, validators=[MinValueValidator(1)]
+    )
 
     def __str__(self):
         return self.title
 
     class Meta:
-        ordering = ['title']
+        ordering = ["title"]
 
 
 class Review(models.Model):
     product = models.ForeignKey(
-        Product, on_delete=models.CASCADE, related_name="reviews")
+        Product, on_delete=models.CASCADE, related_name="reviews"
+    )
     name = models.CharField(max_length=255)
     description = models.TextField()
     date = models.DateTimeField(auto_now_add=True)
@@ -92,6 +94,7 @@ class Cart(models.Model):
     Field:
         created_at = The field for noting the day and time a cart obj is created.
     """
+
     id = models.UUIDField(primary_key=True, default=uuid4)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -106,12 +109,9 @@ class CartItem(models.Model):
         quantity (int): The field for noting the number of items in a cart
     """
 
-    cart = models.ForeignKey(
-        to=Cart, on_delete=models.CASCADE, related_name="items")
+    cart = models.ForeignKey(to=Cart, on_delete=models.CASCADE, related_name="items")
     product = models.ForeignKey(to=Product, on_delete=models.CASCADE)
-    quantity = models.PositiveSmallIntegerField(
-        validators=[MinValueValidator(1)]
-    )
+    quantity = models.PositiveSmallIntegerField(validators=[MinValueValidator(1)])
 
     class Meta:
         unique_together = [["cart", "product"]]
@@ -139,22 +139,25 @@ class Customer(models.Model):
         (MEMBERSHIP_GOLD, "Gold"),
     ]
     birth_date = models.DateField(null=True)
-    email = models.EmailField(max_length=254, unique=True)
-    first_name = models.CharField(max_length=255)
-    last_name = models.CharField(max_length=255)
     membership = models.CharField(
         max_length=1, choices=MEMBERSHIP_CHOICES, default=MEMBERSHIP_BRONZE
     )
     phone = models.CharField(max_length=255)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
     def __str__(self) -> str:
-        return f'{self.first_name} {self.last_name}'
+        return f"{self.user.first_name} {self.user.last_name}"
+
+    @admin.display(ordering="user__first_name")
+    def first_name(self):
+        return self.user.first_name
+
+    @admin.display(ordering="user__last_name")
+    def last_name(self):
+        return self.user.last_name
 
     class Meta:
-        indexes = [
-            models.Index(fields=['first_name', 'last_name'])
-        ]
-        ordering = ['first_name', 'last_name']
+        ordering = ["user__first_name", "user__last_name"]
 
 
 class Order(models.Model):
@@ -179,6 +182,9 @@ class Order(models.Model):
     payment_status = models.CharField(
         max_length=1, choices=PAYMENT_STATUS_CHOICES, default=PAYMENT_STATUS_PENDING
     )
+
+    class Meta:
+        permissions = [("cancel_order", "Can cancel order")]
 
 
 class Address(models.Model):
@@ -209,8 +215,10 @@ class OrderItem(models.Model):
     """
 
     order = models.ForeignKey(
-        to=Order, on_delete=models.PROTECT, related_name="order_items")
+        to=Order, on_delete=models.PROTECT, related_name="order_items"
+    )
     product = models.ForeignKey(
-        to=Product, on_delete=models.PROTECT, related_name='order_items')
+        to=Product, on_delete=models.PROTECT, related_name="order_items"
+    )
     quantity = models.PositiveSmallIntegerField()
     unit_price = models.DecimalField(max_digits=6, decimal_places=2)

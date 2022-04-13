@@ -41,18 +41,16 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
     # Local Apps
     "playground.apps.PlaygroundConfig",
     "store.apps.StoreConfig",
     "tags.apps.TagsConfig",
     "likes.apps.LikesConfig",
-    "store_custom.apps.StoreCustomConfig",
-
+    "core.apps.CoreConfig",
     # Third-party Apps
     "debug_toolbar",
-    'rest_framework',
-    'django_filters',
+    "rest_framework",
+    "django_filters",
 ]
 
 INTERNAL_IPS = [
@@ -77,7 +75,7 @@ ROOT_URLCONF = "storefront.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [os.path.join(BASE_DIR, 'templates')],
+        "DIRS": [os.path.join(BASE_DIR, "templates")],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -99,8 +97,8 @@ WSGI_APPLICATION = "storefront.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        'OPTIONS': {
-            'read_default_file': '/etc/mysql/my.cnf2',
+        "OPTIONS": {
+            "read_default_file": "/etc/mysql/my.cnf2",
         },
     }
 }
@@ -144,8 +142,10 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
-    'COERCE_DECIMAL_TO_STRING': False,
+    "COERCE_DECIMAL_TO_STRING": False,
 }
+
+AUTH_USER_MODEL = "core.User"
