@@ -12,6 +12,8 @@ pylint-django = "*"
 djangorestframework = "*"
 drf-nested-routers = "*"
 django-filter = "*"
+djoser = "*"
+djangorestframework-simplejwt = "*"
 
 [dev-packages]
 autopep8 = "*"
