@@ -1,7 +1,11 @@
 from django.db.models import Count
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.permissions import (
+    IsAuthenticated,
+    IsAdminUser,
+    DjangoModelPermissions,
+)
 from rest_framework import status
 from rest_framework.mixins import (
     CreateModelMixin,
@@ -15,13 +19,27 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from .filters import ProductFilter
 from .pagination import ProductPagination
-from .permissions import IsAdminOrReadOnly
-from .models import Cart, CartItem, Customer, Product, Collection, OrderItem, Review
+from .models import (
+    Cart,
+    CartItem,
+    Customer,
+    Order,
+    Product,
+    Collection,
+    OrderItem,
+    Review,
+)
+from .permissions import (
+    CustomDjangoModelPermission,
+    ViewCustomerHistoryPermission,
+    IsAdminOrReadOnly,
+)
 from .serializers import (
     AddCartItemSerializer,
     CartItemSerializer,
     CartSerializer,
     CustomerSerializer,
+    OrderSerializer,
     ProductSerializer,
     CollectionSerializer,
     ReviewSerializer,
@@ -111,7 +129,7 @@ class CartItemViewSet(ModelViewSet):
 class CustomerViewSet(ModelViewSet):
     queryset = Customer.objects.all()
     serializer_class = CustomerSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [CustomDjangoModelPermission]
 
     # def get_permissions(self):
     #     if self.request.method == "GET":
@@ -119,11 +137,11 @@ class CustomerViewSet(ModelViewSet):
 
     #     return [IsAuthenticated()]
 
-    # Create a custom method called "me". We can make it available on the  instance/detail requests or collection/list requests.
+    # Create a custom method called "me". We can make it available on the  instance/detail(yes pk) requests or collection/list(no pk) requests.
     # NOTE: All methods are called actions, so we can say here in this view we have the create action(made available via CreateModelMixins), update action(made available via UpdateModelMixin).
     @action(detail=False, methods=["GET", "PUT"], permission_classes=[IsAuthenticated])
     def me(self, request):
-        (customer, created) = Customer.objects.get_or_create(user_id=request.user.id)
+        (customer, _) = Customer.objects.get_or_create(user_id=request.user.id)
         if request.method == "GET":
             serializer = CustomerSerializer(instance=customer)
             return Response(serializer.data)
@@ -132,3 +150,20 @@ class CustomerViewSet(ModelViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data)
+
+    @action(detail=True, permission_classes=[ViewCustomerHistoryPermission])
+    def history(self, request, pk):
+        return Response("Ok")
+
+
+class OrderViewSet(ModelViewSet):
+    serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_staff:
+            return Order.objects.prefetch_related("order_items").all()
+
+        (customer_id, _) = Customer.objects.only("id").get_or_create(user_id=user.id)
+        return Order.objects.filter(customer_id=customer_id)
