@@ -38,6 +38,7 @@ from .serializers import (
     AddCartItemSerializer,
     CartItemSerializer,
     CartSerializer,
+    CreateOrderSerializer,
     CustomerSerializer,
     OrderSerializer,
     ProductSerializer,
@@ -157,13 +158,22 @@ class CustomerViewSet(ModelViewSet):
 
 
 class OrderViewSet(ModelViewSet):
-    serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_serializer_class(self, *args, **kwargs):
+        if self.request.method == "POST":
+            return CreateOrderSerializer
+        return OrderSerializer
+    
+    def get_serializer_context(self):
+        return {"user_id": self.request.user.id}
 
     def get_queryset(self):
         user = self.request.user
         if user.is_staff:
-            return Order.objects.prefetch_related("order_items").all()
+            return Order.objects.prefetch_related(
+                "order_items", "order_items__product"
+            ).all()
 
         (customer_id, _) = Customer.objects.only("id").get_or_create(user_id=user.id)
         return Order.objects.filter(customer_id=customer_id)
