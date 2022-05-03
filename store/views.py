@@ -1,11 +1,7 @@
 from django.db.models import Count
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from rest_framework.permissions import (
-    IsAuthenticated,
-    IsAdminUser,
-    DjangoModelPermissions,
-)
+from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.mixins import (
     CreateModelMixin,
@@ -164,7 +160,7 @@ class OrderViewSet(ModelViewSet):
         if self.request.method == "POST":
             return CreateOrderSerializer
         return OrderSerializer
-    
+
     def get_serializer_context(self):
         return {"user_id": self.request.user.id}
 
