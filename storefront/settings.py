@@ -49,7 +49,6 @@ INSTALLED_APPS = [
     "django_filters",
     "djoser",
     # Local Apps
-    "playground.apps.PlaygroundConfig",
     "store.apps.StoreConfig",
     "tags.apps.TagsConfig",
     "likes.apps.LikesConfig",
