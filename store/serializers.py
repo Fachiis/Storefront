@@ -1,6 +1,8 @@
 from decimal import Decimal
+from django.db import transaction
 from rest_framework import serializers
 
+from .signals import order_created
 from .models import (
     Cart,
     CartItem,
@@ -155,9 +157,54 @@ class OrderSerializer(serializers.ModelSerializer):
         ]
 
 
+class UpdateOrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ["payment_status"]
+
+
 class CreateOrderSerializer(serializers.Serializer):
     cart_id = serializers.UUIDField()
 
+    # To create a custom validate_field_name...There must be a field to customized a validation
+    def validate_cart_id(self, cart_id):
+        if not Cart.objects.filter(pk=cart_id).exists():
+            raise serializers.ValidationError(
+                detail="No cart with the given ID was found."
+            )
+        if CartItem.objects.filter(cart_id=cart_id).count() == 0:
+            raise serializers.ValidationError(detail="The cart is empty")
+
+        return cart_id
+
     def save(self, **kwargs):
-        (customer, created) = Customer.objects.get_or_create(user_id=self.context["user_id"])
-        return Order.objects.create(customer=customer)
+        with transaction.atomic():
+            (customer, _) = Customer.objects.get_or_create(
+                user_id=self.context["user_id"]
+            )
+
+            order = Order.objects.create(customer=customer)
+
+            # Get cart items of the created cart_id
+            cart_items = CartItem.objects.select_related("product").filter(
+                cart_id=self.validated_data["cart_id"]
+            )
+            # Convert the cart items to order items using list comphren.
+            order_items = [
+                OrderItem(
+                    order=order,
+                    product=item.product,
+                    unit_price=item.product.unit_price,
+                    quantity=item.quantity,
+                )
+                for item in cart_items
+            ]
+            # Save the order items using bulk create to save the list of order items at once
+            OrderItem.objects.bulk_create(order_items)
+
+            # Delete the cart id after creating an order
+            Cart.objects.filter(pk=self.validated_data["cart_id"]).delete()
+
+            order_created.send_robust(sender=self.__class__, order=order)
+
+            return order

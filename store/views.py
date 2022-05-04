@@ -1,7 +1,7 @@
 from django.db.models import Count
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework import status
 from rest_framework.mixins import (
     CreateModelMixin,
@@ -41,6 +41,7 @@ from .serializers import (
     CollectionSerializer,
     ReviewSerializer,
     UpdateCartItemSerializer,
+    UpdateOrderSerializer,
 )
 
 
@@ -154,15 +155,28 @@ class CustomerViewSet(ModelViewSet):
 
 
 class OrderViewSet(ModelViewSet):
-    permission_classes = [IsAuthenticated]
+    http_method_names = ["get", "post", "patch", "delete", "head", "options"]
+
+    def get_permissions(self):
+        if self.request.method in ["PATCH", "DELETE"]:
+            return [IsAdminUser()]
+        return [IsAuthenticated()]
+
+    def create(self, request, *args, **kwargs):
+        serializer = CreateOrderSerializer(
+            data=request.data, context={"user_id": self.request.user.id}
+        )
+        serializer.is_valid(raise_exception=True)
+        order = serializer.save()
+        serializer = OrderSerializer(instance=order)
+        return Response(data=serializer.data)
 
     def get_serializer_class(self, *args, **kwargs):
         if self.request.method == "POST":
             return CreateOrderSerializer
+        elif self.request.method == "PATCH":
+            return UpdateOrderSerializer
         return OrderSerializer
-
-    def get_serializer_context(self):
-        return {"user_id": self.request.user.id}
 
     def get_queryset(self):
         user = self.request.user
