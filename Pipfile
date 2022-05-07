@@ -8,16 +8,17 @@ django = "*"
 django-environ = "*"
 django-debug-toolbar = "*"
 mysqlclient = "*"
-pylint-django = "*"
 djangorestframework = "*"
 drf-nested-routers = "*"
 django-filter = "*"
 djoser = "*"
 djangorestframework-simplejwt = "*"
+pylint-django = "*"
 
 [dev-packages]
 autopep8 = "*"
 pylint = "*"
+pylint-django = "*"
 
 [requires]
 python_version = "3.9"
