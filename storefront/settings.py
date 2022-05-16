@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     "tags.apps.TagsConfig",
     "likes.apps.LikesConfig",
     "core.apps.CoreConfig",
+    "pages.apps.PagesConfig",
 ]
 
 INTERNAL_IPS = [
@@ -178,3 +179,21 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=2),
 }
+
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+
+# SMTP Server Configuration
+EMAIL_HOST = "localhost"
+EMAIL_HOST_USER = ""
+EMAIL_HOST_PASSWORD = ""
+EMAIL_PORT = 2525
+
+
+# From Email User
+DEFAULT_FROM_EMAIL = "info@easybuy.com"
+
+# Configuration for sending email using mail_admins [(name, email),]
+ADMINS = [
+    ("James", "adminjames@easybuy.com"),
+]
