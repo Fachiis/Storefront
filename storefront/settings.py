@@ -11,9 +11,9 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
-from datetime import timedelta
-
 import environ
+from datetime import timedelta
+from celery.schedules import crontab
 
 env = environ.Env()
 
@@ -197,3 +197,14 @@ DEFAULT_FROM_EMAIL = "info@easybuy.com"
 ADMINS = [
     ("James", "adminjames@easybuy.com"),
 ]
+
+CELERY_BROKER_URL = "redis://localhost:6379/1"
+CELERY_BEAT_SCHEDULE = {
+    "notify_customers": {
+        "task": "pages.tasks.notify_customers",
+        # Have more control with time using crontab as shown
+        # 'schedule': crontab(day_of_week=1, hour=9, minute=30)
+        "schedule": 5,
+        "args": ["Hello and Welcome to the team Fachiis"],
+    }
+}
