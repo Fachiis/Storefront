@@ -26,6 +26,8 @@ autopep8 = "*"
 pylint = "*"
 pylint-django = "*"
 black = "*"
+pytest = "*"
+pytest-django = "*"
 
 [requires]
 python_version = "3.9"
