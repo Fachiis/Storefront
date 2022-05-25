@@ -28,6 +28,7 @@ pylint-django = "*"
 black = "*"
 pytest = "*"
 pytest-django = "*"
+pytest-watch = "*"
 
 [requires]
 python_version = "3.9"
