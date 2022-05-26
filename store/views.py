@@ -131,14 +131,11 @@ class CustomerViewSet(ModelViewSet):
     serializer_class = CustomerSerializer
     permission_classes = [CustomDjangoModelPermission]
 
-    # def get_permissions(self):
-    #     if self.request.method == "GET":
-    #         return [AllowAny()]
-
-    #     return [IsAuthenticated()]
-
-    # Create a custom method called "me". We can make it available on the  instance/detail(yes pk) requests or collection/list(no pk) requests.
-    # NOTE: All methods are called actions, so we can say here in this view we have the create action(made available via CreateModelMixins), update action(made available via UpdateModelMixin).
+    # Create a custom method called "me" and "history". We can make it available on the  
+    # instance/detail(pk) requests or collection/list() requests.
+    # NOTE: All methods are called actions, so we can say here in this view 
+    # we have the create action(made available via CreateModelMixins), 
+    # update action(made available via UpdateModelMixin).
     @action(detail=False, methods=["GET", "PUT"], permission_classes=[IsAuthenticated])
     def me(self, request):
         customer = Customer.objects.get(user_id=request.user.id)
