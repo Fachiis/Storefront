@@ -159,15 +159,6 @@ SIMPLE_JWT = {
 }
 
 
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-
-# SMTP Server Configuration
-EMAIL_HOST = "localhost"
-EMAIL_HOST_USER = ""
-EMAIL_HOST_PASSWORD = ""
-EMAIL_PORT = 2525
-
-
 # From Email User
 DEFAULT_FROM_EMAIL = "info@easybuy.com"
 
@@ -176,7 +167,6 @@ ADMINS = [
     ("James", "adminjames@easybuy.com"),
 ]
 
-CELERY_BROKER_URL = "redis://localhost:6379/1"
 CELERY_BEAT_SCHEDULE = {
     "notify_customers": {
         "task": "pages.tasks.notify_customers",
@@ -184,19 +174,6 @@ CELERY_BEAT_SCHEDULE = {
         # 'schedule': crontab(day_of_week=1, hour=9, minute=30)
         "schedule": 5,
         "args": ["Hello and Welcome to the team Fachiis"],
-    }
-}
-
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/2",
-        # Set the expiration time in minute for the cached data in memory
-        # 10 minutes before the cache expires
-        "TIMEOUT": 10 * 60,
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-        },
     }
 }
 

@@ -13,8 +13,31 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
         "NAME": "storefront",
-        "HOST": "localhost",
+        "HOST": "mysql",
         "USER": "fachiis",
         "PASSWORD": "zasha1996",
     }
 }
+
+CELERY_BROKER_URL = "redis://redis:6379/1"
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://redis:6379/2",
+        # Set the expiration time in minute for the cached data in memory
+        # 10 minutes before the cache expires
+        "TIMEOUT": 10 * 60,
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+    }
+}
+
+# SMTP Server Configuration
+EMAIL_HOST = "smtp4dev"
+EMAIL_HOST_USER = ""
+EMAIL_HOST_PASSWORD = ""
+EMAIL_PORT = 2525
+
+DEBUG_TOOLBAR_CONFIG = {"SHOW_TOOLBAR_CALLBACK": lambda request: True}
