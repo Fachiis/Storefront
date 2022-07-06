@@ -11,27 +11,17 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
-import environ
 from datetime import timedelta
+from pathlib import Path
 from celery.schedules import crontab
 
-env = environ.Env()
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env("SECRET_KEY", None)
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env("DEBUG")
-
-ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -43,13 +33,12 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # Third-party Apps
     "corsheaders",
     "debug_toolbar",
     "rest_framework",
     "django_filters",
     "djoser",
-    # Local Apps
+    "silk",
     "store.apps.StoreConfig",
     "tags.apps.TagsConfig",
     "likes.apps.LikesConfig",
@@ -71,6 +60,7 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "debug_toolbar.middleware.DebugToolbarMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -98,19 +88,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "storefront.wsgi.application"
-
-
-# Database
-# https://docs.djangoproject.com/en/2.2/ref/settings/#databases
-
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.mysql",
-        "OPTIONS": {
-            "read_default_file": "/etc/mysql/my.cnf2",
-        },
-    }
-}
 
 
 # Password validation
@@ -150,6 +127,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = "/static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
@@ -207,4 +185,49 @@ CELERY_BEAT_SCHEDULE = {
         "schedule": 5,
         "args": ["Hello and Welcome to the team Fachiis"],
     }
+}
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/2",
+        # Set the expiration time in minute for the cached data in memory
+        # 10 minutes before the cache expires
+        "TIMEOUT": 10 * 60,
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+    }
+}
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            # With this class, we can write log messages to console.
+            "class": "logging.StreamHandler"
+        },
+        "file": {
+            # With this class, We can write log messages to a file
+            "class": "logging.FileHandler",
+            "filename": "general.log",
+            "formatter": "verbose",
+        },
+    },
+    "loggers": {
+        # With an empty string key, we are defining to capture all log messages in our project. Level defines the stage at which you want to start capturing message, top to bottom flow, anything from INFO -> down will be logged out
+        "": {
+            "handlers": ["console", "file"],
+            "level": os.environ.get("DJANGO_LOG_LEVEL", "INFO"),
+        }
+    },
+    "formatters": {
+        # With formatters, we decide how log messages should be formatted. we have simple and verbose
+        "verbose": {
+            # We can configure any way we want to. for instance, 'date (level/severity) - {module name} - {log message}'
+            "format": "{asctime} ({levelname}) - {name} - {message}",
+            "style": "{",
+        }
+    },
 }
