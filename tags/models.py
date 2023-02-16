@@ -43,12 +43,12 @@ class TaggedItem(models.Model):
     """
     # what object to tag (e.g product, article, video)
 
-    # content_obj (reading that obj)
-    content_object = GenericForeignKey()
     # TYPE (Product, Article, Video)
     content_type = models.ForeignKey(to=ContentType, on_delete=models.CASCADE)
-    # We name it objects_manager so to avoid conflict with the base manager name (objects)
-    objects_manager = TaggedItemManager()
     # ID (a particular row of interest)
     object_id = models.PositiveIntegerField()
+    # content_obj (reading that obj)
+    content_object = GenericForeignKey()
+    # We name it objects_manager so to avoid conflict with the base manager name (objects)
+    objects_manager = TaggedItemManager()
     tag = models.ForeignKey(to=Tag, on_delete=models.CASCADE)

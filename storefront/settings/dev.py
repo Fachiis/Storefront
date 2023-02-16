@@ -13,9 +13,10 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
         "NAME": "storefront",
-        "HOST": "mysql",
+        "HOST": "localhost",
         "USER": "fachiis",
-        "PASSWORD": "zasha1996",
+        "PASSWORD": "this is fachiis",
+        "PORT": "3306",
     }
 }
 

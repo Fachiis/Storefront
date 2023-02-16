@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "likes.apps.LikesConfig",
     "core.apps.CoreConfig",
     "pages.apps.PagesConfig",
+    "playground.apps.PlaygroundConfig",
 ]
 
 INTERNAL_IPS = [
