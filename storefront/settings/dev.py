@@ -11,6 +11,7 @@ MIDDLEWARE += [
 
 DATABASES = {
     "default": {
+        #** When using MySQL, you must install the MySQL client library (mysqlclient) globally and in the virtual environment.
         "ENGINE": "django.db.backends.mysql",
         "NAME": "storefront",
         "HOST": "localhost",
@@ -26,8 +27,8 @@ CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
         "LOCATION": "redis://redis:6379/2",
-        # Set the expiration time in minute for the cached data in memory
-        # 10 minutes before the cache expires
+        #** Set the expiration time in minute for the cached data in memory
+        #** 10 minutes before the cache expires
         "TIMEOUT": 10 * 60,
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
