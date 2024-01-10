@@ -16,7 +16,7 @@ DATABASES = {
         "NAME": "storefront",
         "HOST": "localhost",
         "USER": "fachiis",
-        "PASSWORD": "this is fachiis",
+        "PASSWORD": "fachiis",
         "PORT": "3306",
     }
 }
