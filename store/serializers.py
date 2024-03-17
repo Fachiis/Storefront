@@ -217,6 +217,7 @@ class CreateOrderSerializer(serializers.Serializer):
             # Delete the cart id after creating an order
             Cart.objects.filter(pk=self.validated_data["cart_id"]).delete()
 
+            # self.__class__ -> magic method to get the class of the current instance. Difference between send and send_robust is that send_robust will not raise an exception if no receiver is connected to the signal. We can also pass optional arguments to the signal receiver like the order instance that is created.
             order_created.send_robust(sender=self.__class__, order=order)
 
             return order
